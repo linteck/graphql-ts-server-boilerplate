@@ -15,7 +15,7 @@ import { ApolloServer } from 'apollo-server-express';
 
 const internalEngineDemo = require('./utils/engine-demo');
 
-// import * as session from "express-session";
+import * as session from "express-session";
 // import * as connectRedis from "connect-redis";
 // import * as RateLimit from "express-rate-limit";
 // import * as RateLimitRedisStore from "rate-limit-redis";
@@ -27,7 +27,7 @@ import { genSchema } from "./utils/genSchema";
 // import { redisSessionPrefix } from "./constants";
 import { createTestConn } from "./testUtils/createTestConn";
 
-// const SESSION_SECRET = "ajslkjalksjdfkl";
+const SESSION_SECRET = "ajslkjalksjdfkl";
 // const RedisStore = connectRedis(session as any);
 
 // creates a sequelize connection once. NOT for every request
@@ -138,23 +138,6 @@ export const startServer = async () => {
   //   })
   // );
   //
-  // server.express.use(
-  //   session({
-  //     store: new RedisStore({
-  //       client: redis as any,
-  //       prefix: redisSessionPrefix
-  //     }),
-  //     name: "qid",
-  //     secret: SESSION_SECRET,
-  //     resave: false,
-  //     saveUninitialized: false,
-  //     cookie: {
-  //       httpOnly: true,
-  //       secure: process.env.NODE_ENV === "production",
-  //       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
-  //     }
-  //   } as any)
-  // );
 
   if (process.env.NODE_ENV === "test") {
     await createTestConn(true);
@@ -174,6 +157,29 @@ export const startServer = async () => {
     keys: ['token'],
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }))
+
+  const conObject = {
+    host: "localhost",
+    port: 9400,
+    user: "teacher",
+    password: "studyhard",
+    database: "kousuandb",
+  };
+
+  app.use(
+    session({
+      store: new (require('connect-pg-simple')(session))({conObject:conObject}),
+      name: "qid",
+      secret: SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+      }
+    } as any)
+  );
   app.use(CookieParser())
   app.use(Logger('dev'));
   app.use(BodyParser.json());       // to support JSON-encoded bodies
