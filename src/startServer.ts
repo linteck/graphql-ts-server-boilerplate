@@ -2,7 +2,7 @@ import "reflect-metadata";
 import "dotenv/config";
 import * as Express from 'express';
 import * as BodyParser from "body-parser";
-// import * as redis from "redis";
+import * as redis from "redis";
 var cors = require('cors')
 const Logger = require('morgan');
 const CookieSession = require('cookie-session');
@@ -47,46 +47,46 @@ const dataSources = () => ({
   // udAPI: new UDAPI({udapiStore}),
 });
 
-// interface ContextParams {
-//   request:any,
-//   connection:any
-// }
-// // the function that sets up the global context for each resolver, using the req
-// const context = async ({request, connection}:ContextParams) => {
-//   if (connection) {
-//     return connection.context;
-//   }
-//
-//
-//   // simple auth check on every request
-//   //console.dir(req.headers)
-//   // console.log("V:" + auth)
-//   // let eauth = Buffer.from(auth).toString('base64')
-//   // console.log("E:" + eauth)
-//   // {
-//   // "authorization":"YUBiLmNvbQ=="
-//   // }
-//
-//
-// //Sample usage
-//   const auth = request.cookies['token'] || ""
-//   console.log(auth)
-//   // const email = Buffer.from(auth, 'base64').toString('ascii');
-//   //
-//   // let user = await GetUser({email})
-//   // // if the email isn't formatted validly, return null for user
-//   // if (!user) {
-//   //   console.warn(`Get user fail.`);
-//   //   return { user: null };
-//   // }
-//   // return { user: { ...user.dataValues, loggedIn: true}  };
-//   return {
-//     redis: redis,
-//     url: request.protocol + "://" + request.get("host"),
-//     session: request.session,
-//     req: request
-//   }
-// };
+interface ContextParams {
+  req:any,
+  connection:any
+}
+// the function that sets up the global context for each resolver, using the req
+const context = async ({req, connection}:ContextParams) => {
+  if (connection) {
+    return connection.context;
+  }
+
+
+  // simple auth check on every request
+  //console.dir(req.headers)
+  // console.log("V:" + auth)
+  // let eauth = Buffer.from(auth).toString('base64')
+  // console.log("E:" + eauth)
+  // {
+  // "authorization":"YUBiLmNvbQ=="
+  // }
+
+
+//Sample usage
+  const auth = req.cookies['token'] || ""
+  console.log(auth)
+  // const email = Buffer.from(auth, 'base64').toString('ascii');
+  //
+  // let user = await GetUser({email})
+  // // if the email isn't formatted validly, return null for user
+  // if (!user) {
+  //   console.warn(`Get user fail.`);
+  //   return { user: null };
+  // }
+  // return { user: { ...user.dataValues, loggedIn: true}  };
+  return {
+    redis: redis,
+    url: req.protocol + "://" + req.get("host"),
+    session: req.session,
+    req: req
+  }
+};
 const corsOptions = {
   credentials: true,
   origin:
@@ -98,7 +98,7 @@ const corsOptions = {
 const server = new ApolloServer({
   schema: genSchema(),
   dataSources: dataSources,
-  // context: context,
+  context: context,
   engine: {
     apiKey: process.env.ENGINE_API_KEY,
     ...internalEngineDemo,

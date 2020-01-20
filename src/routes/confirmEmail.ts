@@ -4,7 +4,12 @@ import { redis } from "../redis";
 
 export const confirmEmail = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = await redis.get(id);
+  const userId = id;
+  const userAlreadyExists = await User.findOne({
+    where: { id:userId },
+    select: ["email"]
+  });
+  console.log(userAlreadyExists);
   if (userId) {
     await User.update({ id: userId }, { confirmed: true });
     await redis.del(id);
